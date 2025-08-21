@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Águas Confessionais</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --azul-claro: #89c2ff;
+      --azul-marinho: #1a2352;
+      --branco: #f4faff;
+      --dourado: #eecb6d;
+      --fonte-primaria: 'Montserrat', sans-serif;
+      --fonte-artistica: 'Playfair Display', serif;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--fonte-primaria);
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--azul-claro) 0%, var(--branco) 100%);
+      position: relative;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: -2;
+      background: 
+        linear-gradient(120deg, #89c2ffcc 0%, #1a235299 100%),
+        url('https://pbs.twimg.com/media/F-ArtPTXoAAvuny.jpg:large') center center / cover no-repeat;
+      opacity: 0.45;
+      filter: blur(1.5px) saturate(1.2);
+      pointer-events: none;
+      transition: opacity 0.5s;
+    }
+    .header {
+      background: rgba(26,35,82,0.75);
+      border-bottom: 2px solid var(--dourado);
+      padding: 32px 0 12px 0;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 4px 16px rgba(26,35,82,0.05);
+    }
+    .site-title {
+      font-family: var(--fonte-artistica);
+      font-size: 2.8rem;
+      color: var(--branco);
+      letter-spacing: 2px;
+      text-shadow: 0 2px 18px var(--azul-claro), 0 0 2px var(--dourado);
+      font-style: italic;
+      margin-bottom: 0;
+    }
+    .site-title::after {
+      content: '';
+      display: block;
+      margin: 8px auto 0;
+      width: 70px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--azul-claro), var(--dourado), var(--azul-marinho));
+      border-radius: 2px;
+      opacity: 0.6;
+    }
+    .menu {
+      display: flex;
+      justify-content: center;
+      gap: 36px;
+      margin-top: 16px;
+    }
+    .menu-btn {
+      background: none;
+      border: none;
+      color: var(--dourado);
+      font-size: 1.1rem;
+      font-family: var(--fonte-artistica);
+      letter-spacing: 1px;
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: background 0.3s;
+      outline: none;
+      position: relative;
+      overflow: hidden;
+    }
+    .menu-btn:hover {
+      background: linear-gradient(90deg, var(--azul-claro) 30%, var(--branco) 100%);
+      color: var(--azul-marinho);
+    }
+    .waves {
+      position: absolute;
+      left: 0; right: 0; bottom: -8px;
+      width: 100%; height: 32px;
+      pointer-events: none;
+      z-index: 1;
+    }
+    /* Imagem de boas-vindas no menu */
+    .welcome-image {
+      display: block;
+      margin: 32px auto 0 auto;
+      width: 320px;
+      max-width: 90vw;
+      border-radius: 28px;
+      box-shadow: 0 6px 32px rgba(137,194,255,0.17);
+      border: 3px solid var(--dourado);
+      background: rgba(137,194,255,0.10);
+      animation: fadeInImg 2s;
+      object-fit: cover;
+    }
+    @keyframes fadeInImg {
+      from { opacity: 0; transform: translateY(20px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    .furina-welcome-text {
+      font-family: var(--fonte-artistica);
+      font-size: 1.25rem;
+      color: var(--azul-marinho);
+      font-style: italic;
+      letter-spacing: 1px;
+      text-shadow: 0 1px 8px var(--azul-claro), 0 0 1px var(--dourado);
+      text-align: center;
+      margin-top: 18px;
+      margin-bottom: 8px;
+      line-height: 1.7;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .furina-welcome-text span {
+      font-size: 1.5rem;
+      color: var(--dourado);
+      font-family: var(--fonte-artistica);
+      font-style: italic;
+      text-shadow: none;
+    }
+    .main-content {
+      max-width: 700px;
+      margin: 38px auto 0 auto;
+      background: rgba(255,255,255,0.85);
+      border-radius: 24px;
+      box-shadow: 0 4px 28px rgba(26,35,82,0.08);
+      padding: 36px 32px 32px 32px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--azul-claro);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 350px;
+    }
+    .content-area {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(137,194,255,0.18);
+      pointer-events: none;
+      animation: bubbleMove 10s linear infinite;
+    }
+    @keyframes bubbleMove {
+      0% { opacity: 0.5; transform: scale(1) translateY(0);}
+      60% { opacity: 0.35; }
+      100% { opacity: 0.25; transform: scale(1.2) translateY(-120px);}
+    }
+    .diary-label {
+      color: var(--azul-marinho);
+      font-family: var(--fonte-artistica);
+      font-size: 1.2rem;
+      margin-bottom: 14px;
+      display: block;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+    .diary-textarea {
+      width: 100%;
+      min-height: 180px;
+      max-height: 340px;
+      font-size: 1.1rem;
+      font-family: var(--fonte-primaria);
+      border: 1.5px solid var(--azul-claro);
+      border-radius: 18px;
+      padding: 18px;
+      background: rgba(244,250,255,0.9);
+      box-shadow: 0 1px 8px rgba(137,194,255,0.08);
+      resize: vertical;
+      outline: none;
+      color: var(--azul-marinho);
+      transition: box-shadow 0.3s;
+      margin-bottom: 18px;
+    }
+    .diary-textarea:focus {
+      box-shadow: 0 2px 18px rgba(137,194,255,0.15);
+      border-color: var(--dourado);
+    }
+    .save-btn, .export-btn, .import-btn, .email-btn {
+      display: inline-block;
+      margin: 18px 8px 0 0;
+      padding: 10px 20px;
+      font-size: 1rem;
+      font-family: var(--fonte-artistica);
+      background: linear-gradient(90deg, var(--azul-marinho), var(--azul-claro) 80%);
+      color: var(--branco);
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 2px 12px rgba(26,35,82,0.07);
+      transition: background 0.3s, box-shadow 0.3s;
+      letter-spacing: 1px;
+    }
+    .save-btn:hover, .export-btn:hover, .import-btn:hover, .email-btn:hover {
+      background: linear-gradient(90deg, var(--azul-claro) 60%, var(--dourado) 100%);
+      color: var(--azul-marinho);
+      box-shadow: 0 4px 20px rgba(137,194,255,0.18);
+    }
+    .diary-list {
+      margin-top: 24px;
+      border-top: 1px solid var(--azul-claro);
+      padding-top: 16px;
+      width: 100%;
+    }
+    .diary-entry {
+      background: rgba(137,194,255,0.09);
+      border-radius: 12px;
+      margin-bottom: 16px;
+      padding: 12px 18px;
+      box-shadow: 0 1px 8px rgba(137,194,255,0.05);
+      position: relative;
+      border-left: 3px solid var(--dourado);
+    }
+    .entry-date {
+      font-size: 0.98rem;
+      color: var(--azul-marinho);
+      font-family: var(--fonte-artistica);
+      margin-bottom: 6px;
+    }
+    .entry-text {
+      font-size: 1.08rem;
+      color: var(--azul-marinho);
+      font-family: var(--fonte-primaria);
+      white-space: pre-line;
+    }
+    .delete-btn {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      background: none;
+      border: none;
+      color: var(--dourado);
+      font-size: 1.1rem;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+    }
+    .delete-btn:hover {
+      opacity: 1;
+      color: var(--azul-marinho);
+    }
+    .settings-content {
+      text-align: center;
+      color: var(--azul-marinho);
+      font-family: var(--fonte-artistica);
+      font-size: 1.15rem;
+      margin-top: 24px;
+      padding: 22px;
+      border-radius: 14px;
+      background: rgba(244,250,255,0.8);
+      border: 1px solid var(--azul-claro);
+      box-shadow: 0 1px 12px rgba(137,194,255,0.08);
+    }
+    .export-import-area {
+      text-align: center;
+      margin-top: 12px;
+      margin-bottom: 8px;
+    }
+    .email-hint {
+      font-size: 0.97rem;
+      color: var(--azul-marinho);
+      opacity: 0.7;
+      margin-top: 12px;
+      margin-bottom: 0;
+    }
+    @media (max-width: 900px) {
+      .main-content {
+        max-width: 98vw;
+        padding: 14px 3vw 18px 3vw;
+        border-radius: 12px;
+      }
+      .furina-welcome-text {
+        margin-top: 14px;
+      }
+      .welcome-image {
+        width: 95vw;
+        max-width: 99vw;
+      }
+    }
+    @media (max-width: 650px) {
+      .main-content {
+        padding: 10px 2vw 12px 2vw;
+        border-radius: 12px;
+      }
+      .header {
+        padding: 22px 0 8px 0;
+      }
+      .site-title {
+        font-size: 2rem;
+      }
+      .menu {
+        gap: 18px;
+      }
+      .furina-welcome-text {
+        font-size: 1.08rem;
+        padding-left: 0;
+      }
+      .welcome-image {
+        width: 99vw;
+      }
+    }
+    input[type="file"] {
+      display: none;
+    }
+    label.import-label {
+      background: none;
+      color: var(--dourado);
+      cursor: pointer;
+      font-family: var(--fonte-artistica);
+      font-size: 1rem;
+      margin-left: 10px;
+      border-radius: 8px;
+      padding: 8px 14px;
+      display: inline-block;
+      transition: background 0.2s;
+    }
+    label.import-label:hover {
+      background: linear-gradient(90deg, var(--azul-claro) 60%, var(--dourado) 100%);
+      color: var(--azul-marinho);
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="site-title">Águas Confessionais</div>
+    <nav class="menu">
+      <button class="menu-btn" id="novo-btn">Novo Desabafo</button>
+      <button class="menu-btn" id="dias-btn">Meus Dias</button>
+      <button class="menu-btn" id="config-btn">Configurações</button>
+    </nav>
+    <div class="waves">
+      <svg viewBox="0 0 1440 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,16 C480,48 960,-16 1440,16 L1440,32 L0,32 Z" fill="#89c2ff" fill-opacity="0.23"/>
+        <path d="M0,24 C480,0 960,48 1440,24 L1440,32 L0,32 Z" fill="#eecb6d" fill-opacity="0.09"/>
+      </svg>
+    </div>
+  </header>
+  <!-- Imagem de boas-vindas maior no menu -->
+  <img class="welcome-image" src="https://pbs.twimg.com/media/F-D-7p2WMAAe3Q9.jpg:large" alt="Furina menu welcome" />
+  <div class="furina-welcome-text">
+    <span>✨</span> “Deixe que suas palavras fluam como a maré — aqui, cada confissão encontra seu próprio oceano.”
+    <br>
+    <span style="font-size:1.1rem; color:var(--azul-marinho); font-style:normal;">— Furina</span>
+  </div>
+  <main class="main-content" id="main-content">
+    <!-- Conteúdo dinâmico aqui -->
+  </main>
+  <!-- Som de bolhas suave ao fundo -->
+  <audio id="bubble-audio" src="https://cdn.pixabay.com/audio/2022/07/26/audio_124bfae6b6.mp3" autoplay loop></audio>
+  <script>
+    window.onload = function() {
+      const audio = document.getElementById('bubble-audio');
+      audio.volume = 0.1;
+    };
+    function createBubble() {
+      const bubble = document.createElement('div');
+      bubble.classList.add('bubble');
+      const size = Math.random() * 30 + 18;
+      bubble.style.width = size + 'px';
+      bubble.style.height = size + 'px';
+      bubble.style.left = (Math.random() * 100) + '%';
+      bubble.style.top = (Math.random() * 60 + 40) + 'px';
+      bubble.style.animationDuration = (Math.random() * 6 + 6) + 's';
+      document.querySelector('.main-content .content-area')?.appendChild(bubble);
+      setTimeout(() => bubble.remove(), 10000);
+    }
+    setInterval(() => {
+      if(document.querySelector('.main-content .content-area')) createBubble();
+    }, 1800);
+    let currentView = 'novo';
+    function getDiaryEntries() {
+      return JSON.parse(localStorage.getItem('diaryEntries') || '[]');
+    }
+    function saveDiaryEntry(text) {
+      const entries = getDiaryEntries();
+      entries.unshift({
+        date: new Date().toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        text
+      });
+      localStorage.setItem('diaryEntries', JSON.stringify(entries));
+    }
+    function setDiaryEntries(entries) {
+      localStorage.setItem('diaryEntries', JSON.stringify(entries));
+    }
+    function deleteDiaryEntry(index) {
+      const entries = getDiaryEntries();
+      entries.splice(index, 1);
+      setDiaryEntries(entries);
+    }
+    function exportDiaryEntries(email=null, attach=false) {
+      const entries = getDiaryEntries();
+      let exportText = `Águas Confessionais - Diário Exportado\n\n`;
+      if(email) exportText += `Usuário: ${email}\n\n`;
+      entries.forEach(entry => {
+        exportText += `Data: ${entry.date}\n`;
+        exportText += `Desabafo:\n${entry.text}\n\n---\n\n`;
+      });
+      const blob = new Blob([exportText], { type: "text/plain;charset=utf-8" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "aguas-confessionais-diary.txt";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      if(attach) {
+        setTimeout(() => {
+          let mailto = "mailto:?subject=%C3%81guas%20Confessionais%20-%20Desabafos&body=Segue%20em%20anexo%20meu%20di%C3%A1rio%20de%20confiss%C3%B5es.%0A%0A%3C%20Lembre-se%20de%20anexar%20o%20arquivo%20baixado%20ao%20e-mail%20manual%20no%20Gmail%20ou%20Outlook%20%3E";
+          window.open(mailto, "_blank");
+        }, 500);
+      }
+    }
+    function importDiaryEntriesFromTxt(file, cb) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const text = e.target.result;
+        const entries = [];
+        const parts = text.split(/\n---\n/g);
+        parts.forEach(part => {
+          const dateMatch = part.match(/Data: (.+)\n/);
+          const textMatch = part.match(/Desabafo:\n([\s\S]*)$/);
+          if(dateMatch && textMatch) {
+            entries.push({ date: dateMatch[1].trim(), text: textMatch[1].trim() });
+          }
+        });
+        if(entries.length) {
+          const oldEntries = getDiaryEntries();
+          setDiaryEntries([...entries, ...oldEntries]);
+          cb(true);
+        } else {
+          cb(false);
+        }
+      };
+      reader.readAsText(file);
+    }
+    function renderNovoDesabafo() {
+      currentView = 'novo';
+      document.getElementById('main-content').innerHTML = `
+        <div class="content-area">
+          <label class="diary-label" for="diary-textarea">O que você deseja confessar hoje?</label>
+          <textarea id="diary-textarea" class="diary-textarea" placeholder="Escreva aqui seu desabafo..."></textarea>
+          <div class="export-import-area">
+            <button class="save-btn" id="save-btn">Salvar Desabafo</button>
+            <button class="export-btn" id="export-btn">Exportar Diário (.txt)</button>
+            <button class="email-btn" id="email-btn">Exportar e Enviar por E-mail</button>
+            <label for="import-file" class="import-label">Importar Diário (.txt)</label>
+            <input type="file" id="import-file" accept=".txt" />
+          </div>
+          <div class="email-hint">
+            Para compartilhar seus desabafos com um profissional de confiança,<br> exporte seu diário e envie manualmente por e-mail.<br>
+            Clique em "Exportar e Enviar por E-mail" para abrir o Gmail/Outlook automaticamente.<br>
+            A exportação é segura e confidencial, permanece apenas com você.
+          </div>
+        </div>
+      `;
+      document.getElementById('save-btn').onclick = () => {
+        const text = document.getElementById('diary-textarea').value.trim();
+        if (text) {
+          saveDiaryEntry(text);
+          renderMeusDias();
+        } else {
+          document.getElementById('diary-textarea').focus();
+        }
+      };
+      document.getElementById('export-btn').onclick = () => exportDiaryEntries();
+      document.getElementById('email-btn').onclick = () => {
+        let email = prompt("Digite seu e-mail para adicionar ao arquivo exportado (opcional):");
+        if(email!==null) {
+          exportDiaryEntries(email.trim(), true);
+        }
+      };
+      document.getElementById('import-file').onchange = function() {
+        if(this.files.length) {
+          importDiaryEntriesFromTxt(this.files[0], function(success){
+            if(success) {
+              alert("Diário importado com sucesso!");
+              renderMeusDias();
+            } else {
+              alert("Falha ao importar. Verifique se o arquivo está no formato correto.");
+            }
+          });
+        }
+      };
+    }
+    function renderMeusDias() {
+      currentView = 'dias';
+      const entries = getDiaryEntries();
+      document.getElementById('main-content').innerHTML = `
+        <div class="content-area">
+          <label class="diary-label">Meus Dias</label>
+          <div class="export-import-area">
+            <button class="export-btn" id="export-btn2">Exportar Diário (.txt)</button>
+            <button class="email-btn" id="email-btn2">Exportar e Enviar por E-mail</button>
+            <label for="import-file2" class="import-label">Importar Diário (.txt)</label>
+            <input type="file" id="import-file2" accept=".txt" />
+          </div>
+          <div class="diary-list">
+          ${
+            entries.length === 0
+            ? `<div class="diary-label">Você ainda não escreveu nenhum desabafo.</div>`
+            : entries.map((entry, i) => `
+              <div class="diary-entry">
+                <span class="entry-date">${entry.date}</span>
+                <div class="entry-text">${entry.text}</div>
+                <button class="delete-btn" title="Excluir" onclick="deleteEntryAndRefresh(${i})">🗑️</button>
+              </div>
+            `).join('')
+          }
+          </div>
+        </div>
+      `;
+      document.getElementById('export-btn2').onclick = () => exportDiaryEntries();
+      document.getElementById('email-btn2').onclick = () => {
+        let email = prompt("Digite seu e-mail para adicionar ao arquivo exportado (opcional):");
+        if(email!==null) {
+          exportDiaryEntries(email.trim(), true);
+        }
+      };
+      document.getElementById('import-file2').onchange = function() {
+        if(this.files.length) {
+          importDiaryEntriesFromTxt(this.files[0], function(success){
+            if(success) {
+              alert("Diário importado com sucesso!");
+              renderMeusDias();
+            } else {
+              alert("Falha ao importar. Verifique se o arquivo está no formato correto.");
+            }
+          });
+        }
+      };
+    }
+    window.deleteEntryAndRefresh = function(index) {
+      deleteDiaryEntry(index);
+      renderMeusDias();
+    };
+    function renderConfig() {
+      currentView = 'config';
+      document.getElementById('main-content').innerHTML = `
+        <div class="content-area">
+          <div class="settings-content">
+            <div>Configurações Pessoais</div>
+            <br>
+            <button class="save-btn" style="margin-bottom: 18px;" onclick="clearDiary()">Limpar todos os desabafos</button>
+            <div style="font-size:1rem; margin-top:10px; color:var(--azul-marinho); opacity:0.7;">
+              Os desabafos ficam apenas no seu navegador.<br>O espaço é confidencial e pessoal.<br><br>
+              <span style="color:var(--dourado)">Águas Confessionais</span> é um espaço seguro e íntimo para suas emoções.<br>
+              <br>
+              <b>Exportação e Importação:</b><br>
+              Use os botões de exportação/importação para salvar ou compartilhar seu diário.<br>
+              Para enviar ao profissional, exporte e clique em "Exportar e Enviar por E-mail" para abrir Gmail/Outlook automaticamente.
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    window.clearDiary = function() {
+      if (confirm('Tem certeza que deseja apagar todos os desabafos?')) {
+        localStorage.removeItem('diaryEntries');
+        renderMeusDias();
+      }
+    };
+    document.getElementById('novo-btn').onclick = renderNovoDesabafo;
+    document.getElementById('dias-btn').onclick = renderMeusDias;
+    document.getElementById('config-btn').onclick = renderConfig;
+    document.querySelectorAll('.menu-btn').forEach(btn => {
+      btn.addEventListener('mousemove', e => {
+        btn.style.background = 'linear-gradient(90deg, var(--azul-claro) 30%, var(--branco) 100%)';
+      });
+      btn.addEventListener('mouseleave', e => {
+        btn.style.background = 'none';
+      });
+    });
+    renderNovoDesabafo();
+  </script>
+</body>
+</html>
