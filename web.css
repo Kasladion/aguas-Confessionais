@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Águas Confessionais</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
+  <!-- Biblioteca docx.js para gerar documentos Word -->
+  <script src="https://unpkg.com/docx@7.7.0/build/index.js"></script>
+  <script src="https://unpkg.com/mammoth@1.7.0/mammoth.browser.min.js"></script>
   <style>
     :root {
       --azul-claro: #89c2ff;
@@ -95,7 +98,6 @@
       pointer-events: none;
       z-index: 1;
     }
-    /* Imagem de boas-vindas no menu */
     .welcome-image {
       display: block;
       margin: 32px auto 0 auto;
@@ -359,7 +361,6 @@
       </svg>
     </div>
   </header>
-  <!-- Imagem de boas-vindas maior no menu -->
   <img class="welcome-image" src="https://pbs.twimg.com/media/F-D-7p2WMAAe3Q9.jpg:large" alt="Furina menu welcome" />
   <div class="furina-welcome-text">
     <span>✨</span> “Deixe que suas palavras fluam como a maré — aqui, cada confissão encontra seu próprio oceano.”
@@ -369,7 +370,6 @@
   <main class="main-content" id="main-content">
     <!-- Conteúdo dinâmico aqui -->
   </main>
-  <!-- Som de bolhas suave ao fundo -->
   <audio id="bubble-audio" src="https://cdn.pixabay.com/audio/2022/07/26/audio_124bfae6b6.mp3" autoplay loop></audio>
   <script>
     window.onload = function() {
@@ -391,6 +391,7 @@
     setInterval(() => {
       if(document.querySelector('.main-content .content-area')) createBubble();
     }, 1800);
+
     let currentView = 'novo';
     function getDiaryEntries() {
       return JSON.parse(localStorage.getItem('diaryEntries') || '[]');
@@ -411,51 +412,108 @@
       entries.splice(index, 1);
       setDiaryEntries(entries);
     }
-    function exportDiaryEntries(email=null, attach=false) {
-      const entries = getDiaryEntries();
-      let exportText = `Águas Confessionais - Diário Exportado\n\n`;
-      if(email) exportText += `Usuário: ${email}\n\n`;
-      entries.forEach(entry => {
-        exportText += `Data: ${entry.date}\n`;
-        exportText += `Desabafo:\n${entry.text}\n\n---\n\n`;
+
+    // Gera um .docx inspirado em Furina com apenas o texto do textarea
+    async function exportSingleDiaryDocx(text) {
+      const { Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle } = window.docx;
+      // Cabeçalho Furina
+      const header = new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 220 },
+        children: [
+          new TextRun({
+            text: "Águas Confessionais",
+            font: "Times New Roman",
+            size: 56,
+            color: "1a2352",
+            bold: true,
+            underline: {},
+            shadow: {
+              color: "eecb6d",
+              blur: 8,
+              offset: { x: 2, y: 2 }
+            }
+          })
+        ],
       });
-      const blob = new Blob([exportText], { type: "text/plain;charset=utf-8" });
+      // Rodapé Furina
+      const footer = new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [
+          new TextRun({ text: " ~ ~ ~ ~ ~ ", color: "89c2ff", font: "Times New Roman", size: 28 }),
+          new TextRun({ text: " • • • ", color: "89c2ff", font: "Times New Roman", size: 20 }),
+          new TextRun({ text: " ~ ~ ~ ~ ~ ", color: "89c2ff", font: "Times New Roman", size: 28 })
+        ]
+      });
+      // Texto central
+      const diaryParagraph = new Paragraph({
+        alignment: AlignmentType.LEFT,
+        spacing: { before: 400, after: 400 },
+        children: [
+          new TextRun({
+            text: text || "Escreva livremente...",
+            font: "Garamond",
+            size: 28,
+            color: "1a2352",
+            italics: true,
+          }),
+        ]
+      });
+      // Documento
+      const doc = new Document({
+        sections: [{
+          properties: {
+            page: {
+              margin: { top: 1200, right: 800, bottom: 800, left: 800 },
+              borders: {
+                pageBorderTop: { style: BorderStyle.SINGLE, color: "89c2ff", size: 24, space: 10 },
+                pageBorderBottom: { style: BorderStyle.SINGLE, color: "89c2ff", size: 24, space: 10 },
+                pageBorderLeft: { style: BorderStyle.SINGLE, color: "f4faff", size: 24, space: 10 },
+                pageBorderRight: { style: BorderStyle.SINGLE, color: "f4faff", size: 24, space: 10 },
+              }
+            }
+          },
+          headers: { default: header },
+          footers: { default: footer },
+          children: [diaryParagraph]
+        }]
+      });
+      const blob = await Packer.toBlob(doc);
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = "aguas-confessionais-diary.txt";
+      link.download = "aguas-confessionais-furina.docx";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      if(attach) {
-        setTimeout(() => {
-          let mailto = "mailto:?subject=%C3%81guas%20Confessionais%20-%20Desabafos&body=Segue%20em%20anexo%20meu%20di%C3%A1rio%20de%20confiss%C3%B5es.%0A%0A%3C%20Lembre-se%20de%20anexar%20o%20arquivo%20baixado%20ao%20e-mail%20manual%20no%20Gmail%20ou%20Outlook%20%3E";
-          window.open(mailto, "_blank");
-        }, 500);
-      }
+      return blob;
     }
-    function importDiaryEntriesFromTxt(file, cb) {
-      const reader = new FileReader();
+
+    // Envia e-mail com docx anexado (orientação manual)
+    async function exportSingleDiaryDocxMailto(text) {
+      await exportSingleDiaryDocx(text);
+      setTimeout(() => {
+        let mailto = "mailto:?subject=%C3%81guas%20Confessionais%20-%20Desabafo&body=Segue%20em%20anexo%20meu%20desabafo.%0A%0A%3C%20Lembre-se%20de%20anexar%20o%20arquivo%20baixado%20ao%20e-mail%20manual%20no%20Gmail%20ou%20Outlook%20%3E";
+        window.open(mailto, "_blank");
+      }, 900);
+    }
+
+    // Importa .docx e exibe conteúdo no textarea
+    function importSingleDiaryDocx(file) {
+      if(!file) return;
+      var reader = new FileReader();
       reader.onload = function(e) {
-        const text = e.target.result;
-        const entries = [];
-        const parts = text.split(/\n---\n/g);
-        parts.forEach(part => {
-          const dateMatch = part.match(/Data: (.+)\n/);
-          const textMatch = part.match(/Desabafo:\n([\s\S]*)$/);
-          if(dateMatch && textMatch) {
-            entries.push({ date: dateMatch[1].trim(), text: textMatch[1].trim() });
-          }
+        var arrayBuffer = e.target.result;
+        mammoth.convertToHtml({arrayBuffer: arrayBuffer}).then(function(result){
+          let html = result.value;
+          let temp = document.createElement("div");
+          temp.innerHTML = html;
+          let txt = temp.innerText.replace(/\s+$/, "");
+          document.getElementById('diary-textarea').value = txt;
         });
-        if(entries.length) {
-          const oldEntries = getDiaryEntries();
-          setDiaryEntries([...entries, ...oldEntries]);
-          cb(true);
-        } else {
-          cb(false);
-        }
       };
-      reader.readAsText(file);
+      reader.readAsArrayBuffer(file);
     }
+
     function renderNovoDesabafo() {
       currentView = 'novo';
       document.getElementById('main-content').innerHTML = `
@@ -464,14 +522,14 @@
           <textarea id="diary-textarea" class="diary-textarea" placeholder="Escreva aqui seu desabafo..."></textarea>
           <div class="export-import-area">
             <button class="save-btn" id="save-btn">Salvar Desabafo</button>
-            <button class="export-btn" id="export-btn">Exportar Diário (.txt)</button>
-            <button class="email-btn" id="email-btn">Exportar e Enviar por E-mail</button>
-            <label for="import-file" class="import-label">Importar Diário (.txt)</label>
-            <input type="file" id="import-file" accept=".txt" />
+            <button class="export-btn" id="export-word-btn">Exportar Diário (.docx)</button>
+            <button class="email-btn" id="email-word-btn">Exportar e Enviar por E-mail (.docx)</button>
+            <label for="import-file" class="import-label">Importar Diário (.docx)</label>
+            <input type="file" id="import-file" accept=".docx" />
           </div>
           <div class="email-hint">
             Para compartilhar seus desabafos com um profissional de confiança,<br> exporte seu diário e envie manualmente por e-mail.<br>
-            Clique em "Exportar e Enviar por E-mail" para abrir o Gmail/Outlook automaticamente.<br>
+            Clique em "Exportar e Enviar por E-mail (.docx)" para abrir o Gmail/Outlook automaticamente.<br>
             A exportação é segura e confidencial, permanece apenas com você.
           </div>
         </div>
@@ -485,26 +543,21 @@
           document.getElementById('diary-textarea').focus();
         }
       };
-      document.getElementById('export-btn').onclick = () => exportDiaryEntries();
-      document.getElementById('email-btn').onclick = () => {
-        let email = prompt("Digite seu e-mail para adicionar ao arquivo exportado (opcional):");
-        if(email!==null) {
-          exportDiaryEntries(email.trim(), true);
-        }
+      document.getElementById('export-word-btn').onclick = () => {
+        const text = document.getElementById('diary-textarea').value.trim();
+        exportSingleDiaryDocx(text);
+      };
+      document.getElementById('email-word-btn').onclick = () => {
+        const text = document.getElementById('diary-textarea').value.trim();
+        exportSingleDiaryDocxMailto(text);
       };
       document.getElementById('import-file').onchange = function() {
         if(this.files.length) {
-          importDiaryEntriesFromTxt(this.files[0], function(success){
-            if(success) {
-              alert("Diário importado com sucesso!");
-              renderMeusDias();
-            } else {
-              alert("Falha ao importar. Verifique se o arquivo está no formato correto.");
-            }
-          });
+          importSingleDiaryDocx(this.files[0]);
         }
       };
     }
+
     function renderMeusDias() {
       currentView = 'dias';
       const entries = getDiaryEntries();
@@ -512,10 +565,10 @@
         <div class="content-area">
           <label class="diary-label">Meus Dias</label>
           <div class="export-import-area">
-            <button class="export-btn" id="export-btn2">Exportar Diário (.txt)</button>
-            <button class="email-btn" id="email-btn2">Exportar e Enviar por E-mail</button>
-            <label for="import-file2" class="import-label">Importar Diário (.txt)</label>
-            <input type="file" id="import-file2" accept=".txt" />
+            <button class="export-btn" id="export-word-btn2">Exportar Diário (.docx)</button>
+            <button class="email-btn" id="email-word-btn2">Exportar e Enviar por E-mail (.docx)</button>
+            <label for="import-file2" class="import-label">Importar Diário (.docx)</label>
+            <input type="file" id="import-file2" accept=".docx" />
           </div>
           <div class="diary-list">
           ${
@@ -532,23 +585,30 @@
           </div>
         </div>
       `;
-      document.getElementById('export-btn2').onclick = () => exportDiaryEntries();
-      document.getElementById('email-btn2').onclick = () => {
-        let email = prompt("Digite seu e-mail para adicionar ao arquivo exportado (opcional):");
-        if(email!==null) {
-          exportDiaryEntries(email.trim(), true);
-        }
+      document.getElementById('export-word-btn2').onclick = () => {
+        // Exporta todos os desabafos como .docx personalizado Furina
+        const allText = entries.map(e => `Data: ${e.date}\nDesabafo:\n${e.text}`).join('\n\n---\n\n');
+        exportSingleDiaryDocx(allText);
+      };
+      document.getElementById('email-word-btn2').onclick = () => {
+        const allText = entries.map(e => `Data: ${e.date}\nDesabafo:\n${e.text}`).join('\n\n---\n\n');
+        exportSingleDiaryDocxMailto(allText);
       };
       document.getElementById('import-file2').onchange = function() {
         if(this.files.length) {
-          importDiaryEntriesFromTxt(this.files[0], function(success){
-            if(success) {
-              alert("Diário importado com sucesso!");
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            var arrayBuffer = e.target.result;
+            mammoth.convertToHtml({arrayBuffer: arrayBuffer}).then(function(result){
+              let html = result.value;
+              let temp = document.createElement("div");
+              temp.innerHTML = html;
+              let txt = temp.innerText.replace(/\s+$/, "");
+              saveDiaryEntry(txt);
               renderMeusDias();
-            } else {
-              alert("Falha ao importar. Verifique se o arquivo está no formato correto.");
-            }
-          });
+            });
+          };
+          reader.readAsArrayBuffer(this.files[0]);
         }
       };
     }
@@ -570,7 +630,7 @@
               <br>
               <b>Exportação e Importação:</b><br>
               Use os botões de exportação/importação para salvar ou compartilhar seu diário.<br>
-              Para enviar ao profissional, exporte e clique em "Exportar e Enviar por E-mail" para abrir Gmail/Outlook automaticamente.
+              Para enviar ao profissional, exporte e clique em "Exportar e Enviar por E-mail (.docx)" para abrir Gmail/Outlook automaticamente.
             </div>
           </div>
         </div>
